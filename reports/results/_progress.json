@@ -1,0 +1,50 @@
+{
+  "resnet_lite": {
+    "test_acc": 0.9034279395503133,
+    "best_val": 0.9039070749736009,
+    "params_M": 2.759,
+    "best_epoch": 44
+  },
+  "resnet_lite_se": {
+    "test_acc": 0.9060081091043126,
+    "best_val": 0.9098908834917283,
+    "params_M": 2.783,
+    "best_epoch": 59
+  },
+  "resnet18_seed123": {
+    "test_acc": 0.9082196830077405,
+    "best_val": 0.9141147483280535,
+    "params_M": 11.172,
+    "best_epoch": 51
+  },
+  "resnet18_sgd_seed123": {
+    "test_acc": 0.914485809067453,
+    "best_val": 0.9197465681098205,
+    "params_M": 11.172,
+    "best_epoch": 53
+  },
+  "resnet18_steplr_seed123": {
+    "test_acc": 0.9074824917065979,
+    "best_val": 0.9039070749736009,
+    "params_M": 11.172,
+    "best_epoch": 32
+  },
+  "resnet_lite_seed123": {
+    "test_acc": 0.9052709178031699,
+    "best_val": 0.9105948609644492,
+    "params_M": 2.759,
+    "best_epoch": 52
+  },
+  "resnet_lite_se_seed123": {
+    "test_acc": 0.9037965352008847,
+    "best_val": 0.9084829285462865,
+    "params_M": 2.783,
+    "best_epoch": 52
+  },
+  "resnet18_cw": {
+    "test_acc": 0.8986361960928861,
+    "best_val": 0.9003871876099965,
+    "params_M": 11.172,
+    "best_epoch": 57
+  }
+}

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FER+ 6 分类情绪识别演示</title>
+<style>
+  :root{
+    --bg:#0e1320; --card:#161d2e; --line:#253049; --txt:#e7ecf5; --sub:#93a0b8;
+    --acc:#4f8cff; --ok:#2fd48f; --bad:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.6 "Microsoft YaHei","Segoe UI",system-ui,sans-serif}
+  header{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid var(--line);
+         background:linear-gradient(90deg,#131a2b,#0e1320)}
+  header h1{font-size:19px;margin:0;font-weight:700}
+  header .tag{font-size:12px;color:var(--sub)}
+  header .sp{flex:1}
+  header a{color:var(--acc);text-decoration:none;font-size:13px;margin-left:14px}
+  .badge{font-size:12px;padding:3px 9px;border-radius:20px;background:#1d2740;color:var(--sub);border:1px solid var(--line)}
+  .badge.on{color:var(--ok);border-color:#1d5c45;background:#12352b}
+  nav{display:flex;gap:6px;padding:14px 22px 0}
+  nav button{background:transparent;border:1px solid var(--line);color:var(--sub);padding:8px 18px;
+             border-radius:10px 10px 0 0;cursor:pointer;font-size:14px}
+  nav button.act{background:var(--card);color:var(--txt);border-bottom-color:var(--card);font-weight:600}
+  main{padding:18px 22px}
+  .grid{display:grid;grid-template-columns:1.15fr 1fr;gap:18px}
+  @media (max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card h3{margin:0 0 12px;font-size:15px}
+  .muted{color:var(--sub);font-size:13px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  select,button.act-btn{background:#1d2740;color:var(--txt);border:1px solid var(--line);
+        padding:8px 12px;border-radius:9px;cursor:pointer;font-size:14px}
+  button.act-btn:hover{border-color:var(--acc)}
+  button.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  #drop{border:2px dashed var(--line);border-radius:12px;min-height:260px;display:flex;align-items:center;
+        justify-content:center;overflow:hidden;position:relative;transition:.15s}
+  #drop.hover{border-color:var(--acc);background:#131c31}
+  #preview{max-width:100%;max-height:340px;display:none;image-rendering:pixelated;border-radius:8px}
+  #placeholder{color:var(--sub);text-align:center;padding:20px}
+  .big{font-size:34px;font-weight:700;letter-spacing:1px}
+  .big small{font-size:16px;color:var(--sub);font-weight:400;margin-left:8px}
+  .bars{margin-top:14px}
+  .bar{display:grid;grid-template-columns:74px 1fr 62px;align-items:center;gap:10px;margin:7px 0;font-size:13px}
+  .track{background:#0f1526;border:1px solid var(--line);border-radius:6px;height:16px;overflow:hidden}
+  .fill{height:100%;width:0;transition:width .25s;border-radius:5px}
+  .pv{text-align:right;font-variant-numeric:tabular-nums;color:var(--sub)}
+  table.meta{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+  table.meta td{padding:5px 4px;border-top:1px solid var(--line)}
+  table.meta td:last-child{text-align:right;color:var(--sub)}
+  .top3{margin-top:10px;font-size:13px;color:var(--sub)}
+  .vidwrap{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:4/3}
+  .vidwrap video,.vidwrap canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .stats{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--sub)}
+  .stats b{color:var(--txt)}
+  .err{color:var(--bad);font-size:13px;margin-top:8px;min-height:18px}
+  footer{padding:16px 22px 30px;color:var(--sub);font-size:12.5px;border-top:1px solid var(--line);margin-top:18px}
+  code{background:#1d2740;padding:1px 6px;border-radius:5px;color:#9ec1ff}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>FER+ 6 分类情绪识别</h1>
+  <span class="tag">中性 · 快乐 · 惊讶 · 悲伤 · 愤怒 · 恐惧</span>
+  <span class="sp"></span>
+  <span class="badge" id="dev">…</span>
+  <span class="badge" id="wsbadge">WS 未连接</span>
+  <a href="/docs" target="_blank">API 文档 /docs</a>
+  <a href="/api/models" target="_blank">模型清单</a>
+</header>
+
+<nav>
+  <button id="tabBtn1" class="act">① 图片识别</button>
+  <button id="tabBtn2">② 视频实时识别</button>
+</nav>
+
+<main>
+<!-- ============================ 图片识别 ============================ -->
+<section id="tab1">
+  <div class="grid">
+    <div class="card">
+      <h3>上传图片</h3>
+      <div class="row">
+        <select id="model1"></select>
+        <button class="act-btn" id="btnSample">随机测试样例</button>
+        <button class="act-btn primary" id="btnRec" disabled>识别</button>
+        <input type="file" id="file" accept="image/*" hidden>
+        <button class="act-btn" id="btnFile">选择图片</button>
+      </div>
+      <div id="drop">
+        <img id="preview" alt="">
+        <div id="placeholder">拖拽图片到此处，或点击「选择图片」<br>
+          <span class="muted">支持 jpg / png / webp，任意尺寸（服务端会缩放到 48×48）</span></div>
+      </div>
+      <div class="err" id="imgErr"></div>
+    </div>
+
+    <div class="card">
+      <h3>识别结果</h3>
+      <div class="big" id="topLabel">—<small>等待识别</small></div>
+      <div class="bars" id="bars1"></div>
+      <div class="top3" id="top3"></div>
+      <table class="meta" id="meta1"></table>
+    </div>
+  </div>
+</section>
+
+<!-- ========================== 视频实时识别 ========================== -->
+<section id="tab2" hidden>
+  <div class="grid">
+    <div class="card">
+      <h3>摄像头</h3>
+      <div class="row">
+        <select id="model2"></select>
+        <button class="act-btn primary" id="btnStart">开始识别</button>
+        <button class="act-btn" id="btnStop" disabled>停止</button>
+      </div>
+      <div class="vidwrap">
+        <video id="video" autoplay muted playsinline></video>
+        <canvas id="overlay"></canvas>
+      </div>
+      <div class="err" id="vidErr"></div>
+      <div class="stats">
+        <span>帧序号 <b id="sSeq">0</b></span>
+        <span>推理 <b id="sLat">–</b> ms</span>
+        <span>平均推理 <b id="sAvg">–</b> ms</span>
+        <span>服务端 FPS <b id="sFps">–</b></span>
+        <span>本地采样 <b>8</b> fps</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>实时情绪概率</h3>
+      <div class="big" id="topLabel2">—<small>未开始</small></div>
+      <div class="bars" id="bars2"></div>
+      <table class="meta" id="meta2"></table>
+      <p class="muted" style="margin-top:12px">
+        每 125 ms 把一帧 JPEG（320×240）经 <code>ws://…/ws/video</code> 发给服务端，
+        服务端逐帧返回 6 类概率；切换模型下拉框即可热切换，无需重连。
+      </p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  统一训练配方：60 epoch · batch 128 · Adam(1e-3)+Cosine · AMP(BF16) · 验证集选优回测测试集。
+  17 组实验结果与说明见仓库内 <code>说明.md</code> / <code>REPORT.md</code>；
+  接口协议见 <code>接口说明.md</code>。
+</footer>
+
+<script>
+const COLORS = ['#9aa5b1','#f6c343','#4fc3f7','#6f9bd8','#ef5b5b','#9b7ede'];
+let CLASSES = [], MODELS = [], DEFAULT_MODEL = 'resnet18';
+
+/* ------------------------- 初始化 ------------------------- */
+async function init(){
+  try{
+    const [h,c,m] = await Promise.all([
+      fetch('/api/health').then(r=>r.json()),
+      fetch('/api/classes').then(r=>r.json()),
+      fetch('/api/models').then(r=>r.json()),
+    ]);
+    CLASSES = c.classes; MODELS = m.models; DEFAULT_MODEL = m.default || (m.models[0]||{}).id;
+    document.getElementById('dev').textContent = h.device + (h.gpu ? ' · '+h.gpu : '');
+    fillSelect(document.getElementById('model1'));
+    fillSelect(document.getElementById('model2'));
+    buildBars('bars1'); buildBars('bars2');
+  }catch(e){ document.getElementById('imgErr').textContent = '初始化失败：'+e; }
+}
+function fillSelect(sel){
+  sel.innerHTML = '';
+  MODELS.forEach(m=>{
+    const o = document.createElement('option');
+    o.value = m.id;
+    const acc = m.test_accuracy!=null ? ` · 测试 ${(m.test_accuracy*100).toFixed(2)}%` : '';
+    const par = m.params_M!=null ? ` (${m.params_M}M)` : '';
+    o.textContent = `${m.display}${acc}${par}`;
+    if(m.id === DEFAULT_MODEL) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+function buildBars(id){
+  const box = document.getElementById(id); box.innerHTML = '';
+  CLASSES.forEach((c,i)=>{
+    const d = document.createElement('div'); d.className='bar';
+    d.innerHTML = `<span>${c.zh} <span class="muted">${c.name}</span></span>
+      <span class="track"><span class="fill" id="${id}_f${i}" style="background:${COLORS[i]}"></span></span>
+      <span class="pv" id="${id}_p${i}">–</span>`;
+    box.appendChild(d);
+  });
+}
+function renderBars(id, probs){
+  probs.forEach((p,i)=>{
+    document.getElementById(`${id}_f${i}`).style.width = (p*100).toFixed(1)+'%';
+    document.getElementById(`${id}_p${i}`).textContent = (p*100).toFixed(1)+'%';
+  });
+}
+function renderTop(id, top){
+  const el = document.getElementById(id);
+  el.innerHTML = `${top.zh}<small>${top.name} · ${(top.prob*100).toFixed(1)}%</small>`;
+}
+
+/* ------------------------- Tab 切换 ------------------------- */
+const t1=document.getElementById('tab1'), t2=document.getElementById('tab2');
+const b1=document.getElementById('tabBtn1'), b2=document.getElementById('tabBtn2');
+b1.onclick=()=>{t1.hidden=false;t2.hidden=true;b1.classList.add('act');b2.classList.remove('act')};
+b2.onclick=()=>{t2.hidden=false;t1.hidden=true;b2.classList.add('act');b1.classList.remove('act')};
+
+/* ------------------------- 图片识别 ------------------------- */
+let currentFile = null;
+const drop=document.getElementById('drop'), preview=document.getElementById('preview'),
+      placeholder=document.getElementById('placeholder'), fileInput=document.getElementById('file');
+
+document.getElementById('btnFile').onclick = ()=>fileInput.click();
+drop.onclick = ()=>fileInput.click();
+fileInput.onchange = e => { if(e.target.files[0]) setFile(e.target.files[0]); };
+['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('hover')}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('hover')}));
+drop.addEventListener('drop', e=>{ const f=e.dataTransfer.files[0]; if(f) setFile(f); });
+
+function setFile(f){
+  document.getElementById('imgErr').textContent='';
+  if(!f.type.startsWith('image/')){ document.getElementById('imgErr').textContent='请选择图片文件'; return; }
+  currentFile = f;
+  const url = URL.createObjectURL(f);
+  preview.src = url; preview.style.display='block'; placeholder.style.display='none';
+  document.getElementById('btnRec').disabled = false;
+  recognize();
+}
+document.getElementById('btnSample').onclick = async ()=>{
+  const r = await fetch('/api/sample/FER2013Test?t='+Date.now());
+  if(!r.ok){ document.getElementById('imgErr').textContent='取样失败'; return; }
+  const blob = await r.blob();
+  setFile(new File([blob], r.headers.get('X-Sample-Name')||'sample.png', {type:'image/png'}));
+};
+document.getElementById('btnRec').onclick = ()=>recognize();
+
+async function recognize(){
+  if(!currentFile) return;
+  const err = document.getElementById('imgErr'); err.textContent='';
+  const btn = document.getElementById('btnRec'); btn.disabled=true; btn.textContent='识别中…';
+  const fd = new FormData();
+  fd.append('file', currentFile);
+  fd.append('model', document.getElementById('model1').value);
+  try{
+    const res = await fetch('/api/recognize', {method:'POST', body:fd});
+    const j = await res.json();
+    if(!res.ok) throw new Error(j.detail || res.status);
+    renderBars('bars1', j.probs.map(p=>p.prob));
+    renderTop('topLabel', j.top);
+    document.getElementById('top3').textContent = 'Top-3：' +
+      [...j.probs].sort((a,b)=>b.prob-a.prob).slice(0,3)
+        .map(p=>`${p.zh} ${(p.prob*100).toFixed(1)}%`).join('  ·  ');
+    document.getElementById('meta1').innerHTML = metaRows(j);
+  }catch(e){ err.textContent = '识别失败：'+e.message; }
+  finally{ btn.disabled=false; btn.textContent='识别'; }
+}
+function metaRows(j){
+  const acc = (MODELS.find(m=>m.id===j.model)||{}).test_accuracy;
+  return `<tr><td>模型</td><td>${j.model}</td></tr>
+    <tr><td>该模型测试准确率</td><td>${acc!=null?(acc*100).toFixed(2)+'%':'-'}</td></tr>
+    <tr><td>图片尺寸</td><td>${j.image.width} × ${j.image.height}</td></tr>
+    <tr><td>推理耗时</td><td>${j.infer_ms} ms</td></tr>
+    <tr><td>总耗时（含解码）</td><td>${j.total_ms} ms</td></tr>`;
+}
+
+/* ------------------------- 视频实时识别 ------------------------- */
+let ws=null, stream=null, timer=null, inflight=0, lastResult=null;
+const video=document.getElementById('video'), overlay=document.getElementById('overlay'),
+      btnStart=document.getElementById('btnStart'), btnStop=document.getElementById('btnStop');
+
+btnStart.onclick = start; btnStop.onclick = stop;
+document.getElementById('model2').onchange = e=>{
+  if(ws && ws.readyState===1) ws.send(JSON.stringify({model:e.target.value}));
+};
+
+async function start(){
+  document.getElementById('vidErr').textContent='';
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'}});
+  }catch(e){ document.getElementById('vidErr').textContent='摄像头不可用：'+e.message; return; }
+  video.srcObject = stream;
+  await video.play();
+  connectWS();
+  timer = setInterval(capture, 125);            // 8 fps
+  btnStart.disabled = true; btnStop.disabled = false;
+}
+function stop(){
+  clearInterval(timer); timer=null;
+  if(ws){ try{ws.close()}catch(e){} ws=null; }
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  video.srcObject = null;
+  document.getElementById('wsbadge').textContent='WS 未连接';
+  document.getElementById('wsbadge').classList.remove('on');
+  btnStart.disabled=false; btnStop.disabled=true;
+  const ctx = overlay.getContext('2d'); ctx.clearRect(0,0,overlay.width,overlay.height);
+}
+
+function connectWS(){
+  const proto = location.protocol==='https:'?'wss':'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws/video`);
+  ws.onopen = ()=>{
+    document.getElementById('wsbadge').textContent='WS 已连接';
+    document.getElementById('wsbadge').classList.add('on');
+    ws.send(JSON.stringify({model:document.getElementById('model2').value}));
+  };
+  ws.onclose = ()=>{ document.getElementById('wsbadge').textContent='WS 已断开';
+                     document.getElementById('wsbadge').classList.remove('on'); };
+  ws.onerror = ()=>{ document.getElementById('vidErr').textContent='WebSocket 出错'; };
+  ws.onmessage = ev=>{
+    inflight = Math.max(0, inflight-1);
+    let j; try{ j=JSON.parse(ev.data); }catch(e){ return; }
+    if(j.type==='hello'){ document.getElementById('meta2').innerHTML =
+        `<tr><td>服务端模型</td><td>${j.model||'-'}</td></tr><tr><td>计算设备</td><td>${j.device}</td></tr>`; return; }
+    if(j.type==='model'){ const m=MODELS.find(x=>x.id===j.model);
+        document.getElementById('meta2').innerHTML =
+        `<tr><td>服务端模型</td><td>${j.model}</td></tr>`+
+        (m&&m.test_accuracy!=null?`<tr><td>该模型测试准确率</td><td>${(m.test_accuracy*100).toFixed(2)}%</td></tr>`:'');
+        return; }
+    if(j.type!=='frame') return;
+    lastResult = j;
+    renderBars('bars2', j.probs.map(p=>p.prob));
+    renderTop('topLabel2', j.top);
+    document.getElementById('sSeq').textContent = j.seq;
+    document.getElementById('sLat').textContent = j.infer_ms;
+    document.getElementById('sAvg').textContent = j.avg_infer_ms;
+    document.getElementById('sFps').textContent = j.uptime_s>0 ? (j.seq/j.uptime_s).toFixed(1) : '-';
+    drawOverlay(j);
+  };
+}
+
+function capture(){
+  if(!ws || ws.readyState!==1 || inflight>2 || !video.videoWidth) return;
+  const w=320, h=240;
+  const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
+  cv.getContext('2d').drawImage(video,0,0,w,h);
+  cv.toBlob(async b=>{ if(!b) return; inflight++; ws.send(await b.arrayBuffer()); }, 'image/jpeg', 0.8);
+}
+
+function drawOverlay(j){
+  const v = document.getElementById('video');
+  overlay.width = v.clientWidth; overlay.height = v.clientHeight;
+  const ctx = overlay.getContext('2d');
+  ctx.clearRect(0,0,overlay.width,overlay.height);
+  const txt = `${j.top.zh}  ${(j.top.prob*100).toFixed(1)}%`;
+  ctx.font = 'bold 22px "Microsoft YaHei", sans-serif';
+  const w = ctx.measureText(txt).width + 24;
+  ctx.fillStyle = 'rgba(10,14,24,.78)';
+  ctx.fillRect(12, 12, w, 40);
+  ctx.fillStyle = COLORS[j.top.index];
+  ctx.fillRect(12, 12, 5, 40);
+  ctx.fillStyle = '#fff';
+  ctx.fillText(txt, 26, 40);
+  ctx.font = '13px "Microsoft YaHei", sans-serif';
+  ctx.fillStyle = 'rgba(231,236,245,.75)';
+  ctx.fillText(`${j.model} · ${j.infer_ms} ms`, 14, overlay.height-14);
+}
+
+init();
+</script>
+</body>
+</html>

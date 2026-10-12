@@ -1,0 +1,112 @@
+{
+  "vgg_init": {
+    "label": "VGG-16（纯卷积堆叠，13 层卷积）",
+    "phase": "init",
+    "n_conv": 13,
+    "first_layer_rms": 0.000124036295649906,
+    "last_layer_rms": 0.00017895985419526697,
+    "head_tail_rms_ratio": 1.442802312481045,
+    "geomean_ratio_per_layer": 1.0310203463328966,
+    "dynamic_range": 2.1008742297636736,
+    "head_tail_norm_ratio": 8.161722392535832
+  },
+  "vgg_trained": {
+    "label": "VGG-16（纯卷积堆叠，13 层卷积）",
+    "phase": "trained",
+    "n_conv": 13,
+    "first_layer_rms": 1.4319101561947415e-05,
+    "last_layer_rms": 2.5932863623923597e-05,
+    "head_tail_rms_ratio": 1.8110677902333907,
+    "geomean_ratio_per_layer": 1.050738290494139,
+    "dynamic_range": 4.4682671972876395,
+    "head_tail_norm_ratio": 10.244946525300529
+  },
+  "resnet18_plain_init": {
+    "label": "ResNet-18 关闭残差（同构对照）",
+    "phase": "init",
+    "n_conv": 17,
+    "first_layer_rms": 4.260151096483848e-06,
+    "last_layer_rms": 0.00015483148312631987,
+    "head_tail_rms_ratio": 36.34412949674751,
+    "geomean_ratio_per_layer": 1.2517775024926703,
+    "dynamic_range": 36.34412949674751,
+    "head_tail_norm_ratio": 102.79672169388874
+  },
+  "resnet18_plain_trained": {
+    "label": "ResNet-18 关闭残差（同构对照）",
+    "phase": "trained",
+    "n_conv": 17,
+    "first_layer_rms": 2.666757609404158e-06,
+    "last_layer_rms": 5.2152574829863354e-05,
+    "head_tail_rms_ratio": 19.556548613923695,
+    "geomean_ratio_per_layer": 1.2042197987939098,
+    "dynamic_range": 19.556548613923695,
+    "head_tail_norm_ratio": 55.314272566039286
+  },
+  "resnet18_init": {
+    "label": "ResNet-18（残差连接）",
+    "phase": "init",
+    "n_conv": 20,
+    "first_layer_rms": 4.8699791174537195e-06,
+    "last_layer_rms": 9.965395955726275e-05,
+    "head_tail_rms_ratio": 20.462913116014974,
+    "geomean_ratio_per_layer": 1.1721907430671301,
+    "dynamic_range": 25.179871048966955,
+    "head_tail_norm_ratio": 57.87785850866134
+  },
+  "resnet18_trained": {
+    "label": "ResNet-18（残差连接）",
+    "phase": "trained",
+    "n_conv": 20,
+    "first_layer_rms": 2.4117181662101452e-06,
+    "last_layer_rms": 4.867383747587982e-05,
+    "head_tail_rms_ratio": 20.18222450609456,
+    "geomean_ratio_per_layer": 1.1713389385600164,
+    "dynamic_range": 44.426432391009776,
+    "head_tail_norm_ratio": 57.083951230755126
+  },
+  "resnet32_plain_init": {
+    "label": "ResNet-32 关闭残差（深层纯网络）",
+    "phase": "init",
+    "n_conv": 33,
+    "first_layer_rms": 4.216051820549183e-06,
+    "last_layer_rms": 0.0020146729204407175,
+    "head_tail_rms_ratio": 477.8577223887837,
+    "geomean_ratio_per_layer": 1.212629366772806,
+    "dynamic_range": 477.8577223887837,
+    "head_tail_norm_ratio": 1351.5857437738705
+  },
+  "resnet32_plain_trained": {
+    "label": "ResNet-32 关闭残差（深层纯网络）",
+    "phase": "trained",
+    "n_conv": 33,
+    "first_layer_rms": 2.7388371866739667e-06,
+    "last_layer_rms": 3.130844754028957e-05,
+    "head_tail_rms_ratio": 11.431291970411147,
+    "geomean_ratio_per_layer": 1.0791094075100063,
+    "dynamic_range": 22.16817505595115,
+    "head_tail_norm_ratio": 32.332576280004204
+  },
+  "resnet32_init": {
+    "label": "ResNet-32（深层残差网络）",
+    "phase": "init",
+    "n_conv": 36,
+    "first_layer_rms": 5.248878854520929e-06,
+    "last_layer_rms": 0.0003575519112828256,
+    "head_tail_rms_ratio": 68.11967301833636,
+    "geomean_ratio_per_layer": 1.1281821286273503,
+    "dynamic_range": 123.48415925020207,
+    "head_tail_norm_ratio": 192.6715308939037
+  },
+  "resnet32_trained": {
+    "label": "ResNet-32（深层残差网络）",
+    "phase": "trained",
+    "n_conv": 36,
+    "first_layer_rms": 9.998102541430853e-06,
+    "last_layer_rms": 5.921302257542758e-05,
+    "head_tail_rms_ratio": 5.922426013341673,
+    "geomean_ratio_per_layer": 1.052134879959041,
+    "dynamic_range": 149.8950001063577,
+    "head_tail_norm_ratio": 16.75115038043803
+  }
+}

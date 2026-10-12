@@ -1,0 +1,16 @@
+# ---- 运行服务必需 ----
+torch>=2.1
+torchvision>=0.16
+pillow>=9.0
+numpy>=1.24
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+
+# ---- 生成报告 / 图表（可选）----
+pandas>=2.0
+matplotlib>=3.7
+
+# ---- 自检脚本 scripts/check_api*.py（可选）----
+httpx>=0.27
+websockets>=12
